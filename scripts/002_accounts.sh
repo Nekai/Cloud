@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# Create user accounts.
+# Mostly mimicking Raider (except for Chuck and Lev's UIDs).
+
+# Pull in config settings... not really needed for this script, but ordnung!
+source ../files/init/config.sh
 
 # HHS
 useradd -u 1010 -g users -c "Chuck Schwarz" -p '$6$Db6M1nOH3bdT3fbu$GGbeO0eYSS7p6xMf21lIsjtqwD1pMzqxmyFVdtzJo6mQtpd5FrQ8FhyXDl24y46iNHKvNOcnvKcJL8oCQz352.' chuck
