@@ -1,6 +1,6 @@
 #!/bin/bash bash
 
-INIT=../../
+INIT=../..
 FILES=$INIT/files
 SCRIPTS=$INIT/scripts/
 ROOTDEST=$INIT/../test
