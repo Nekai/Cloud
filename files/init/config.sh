@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # This file is sourced by all cloud-init scripts from ../scripts dir.
-# Main idea is to define common settings.
+# Main idea is to define common settings and virtually no direct action.
 
 # Where Cluster-Init files and scripts are.
 # Relative path ('..') works fine for testing and production.
