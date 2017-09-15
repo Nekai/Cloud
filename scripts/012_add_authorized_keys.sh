@@ -2,14 +2,14 @@
 #
 # Populate users' authorized_keys, if any.
 #
-# Place them in $FILES/<username>/*.pub, and the script would append them 
+# Place them in $SCRIPTS/<username>/*.pub, and the script would append them 
 # to /home/<username>/.ssh/authorized_keys
 
 # Pull in config settings... not really needed for this script, but ordnung!
 source 000_config.sh
 
 # Loop over all directories in $FILES/keys/
-for dir in $FILES/keys/*; do
+for dir in $SCRIPTS/keys/*; do
 	# Are you a direcrory?
 	[[ ! -d $dir ]] && continue
 
