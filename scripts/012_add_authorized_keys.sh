@@ -6,7 +6,7 @@
 # to /home/<username>/.ssh/authorized_keys
 
 # Pull in config settings... not really needed for this script, but ordnung!
-source ../files/init/config.sh
+source 000_config.sh
 
 # Loop over all directories in $FILES/keys/
 for dir in $FILES/keys/*; do
