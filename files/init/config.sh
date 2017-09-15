@@ -1,4 +1,4 @@
-#!/bin/bash bash
+#!/bin/bash
 
 INIT=..
 FILES=$INIT/files
