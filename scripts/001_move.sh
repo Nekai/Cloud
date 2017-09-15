@@ -1,3 +1,4 @@
 #!/bin/bash
 
-sudo cp ..files/etc/login.defs /etc/
+source ../files/init/config.sh
+cp $FILES/etc/login.defs $ROOTDEST/etc/
