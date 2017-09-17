@@ -7,14 +7,14 @@
 source 000_config.sh
 
 # HHS
-useradd -u 1010 -g users -G wheel -c "Chuck Schwarz" -p '$6$Db6M1nOH3bdT3fbu$GGbeO0eYSS7p6xMf21lIsjtqwD1pMzqxmyFVdtzJo6mQtpd5FrQ8FhyXDl24y46iNHKvNOcnvKcJL8oCQz352.' chuck
-useradd -u 1011 -g users -G wheel -c "Lev Gorenstein"   -p '$6$3.fHvkWXMVqm7JzP$20kNcI7cZHLaQu8/waPbo9NqiI3iAqiXtD4m.Za6/13Jogd7lmWr8GuNaCiljZNtx199ZI1q4dJzYwlVeIFqq0' lev
+useradd -u 1010 -g wheel -c "Chuck Schwarz" -p '$6$Db6M1nOH3bdT3fbu$GGbeO0eYSS7p6xMf21lIsjtqwD1pMzqxmyFVdtzJo6mQtpd5FrQ8FhyXDl24y46iNHKvNOcnvKcJL8oCQz352.' chuck
+useradd -u 1011 -g wheel -c "Lev Gorenstein"   -p '$6$3.fHvkWXMVqm7JzP$20kNcI7cZHLaQu8/waPbo9NqiI3iAqiXtD4m.Za6/13Jogd7lmWr8GuNaCiljZNtx199ZI1q4dJzYwlVeIFqq0' lev
 useradd -u 1012 -g users -c "Jeremy Meyer"     -p '$6$K5n/ABCN1OLeUulD$gvtFKmVQrXryU2WRThyu189hu82i9gHM.kJhBaFtMZgPaLIMYtgnSthrn9w.egXbTOEx/HBPVCSYAOdGoDo3e/'  jmeye90
 useradd -u 1013 -g users -c "Nick Nolte"       -p '$6$rHvJEV8cRsjY7DPx$2sH0T5KsnbPlVkxciCUvvSisvoT/lY2NwVUy/Oaw80lot3EEeYFrtWDA.Z7BmPWmYeugSZZPQhxGBanA7BT8h.'  budtomazi
-useradd -u 1014 -g users -G wheel -c "Jacob Sharp"      -p '$6$p06BdgV7zkYyhRMW$tPxLJgZk3mSn5WaVdxCYlgvUc3iDNlowkfnZxRcoP.mz76uJVWgfaf7Jl8L650OrJ4E/EjLgQlAjK6/FcAzEI0'  sharp67
-useradd -u 1015 -g users -G wheel -c "Callum Gundlach"  -p '$6$v2WfT1wDJj7.4hIt$X56n82OH0QEKOW76xthGRjE8Qw/h/NMDDCg3eUR5LAhcfe.TwHC4fuXa00BYKlMPJ1TQ1zPjkMQyIjykZ4R2z1'  cgundlach
+useradd -u 1014 -g wheel -c "Jacob Sharp"      -p '$6$p06BdgV7zkYyhRMW$tPxLJgZk3mSn5WaVdxCYlgvUc3iDNlowkfnZxRcoP.mz76uJVWgfaf7Jl8L650OrJ4E/EjLgQlAjK6/FcAzEI0'  sharp67
+useradd -u 1015 -g wheel -c "Callum Gundlach"  -p '$6$v2WfT1wDJj7.4hIt$X56n82OH0QEKOW76xthGRjE8Qw/h/NMDDCg3eUR5LAhcfe.TwHC4fuXa00BYKlMPJ1TQ1zPjkMQyIjykZ4R2z1'  cgundlach
 useradd -u 1016 -g users -c "Chris Page"       -p '$6$QTsnrEKlj6.SIbHC$AOxgWnsV4LFoF0WHJEWsLcwd15z9xvQ8vynYJ57cpgzzBUmkpmLJsnU56oY6eqUaojSPaWAjoXhIQbtRsOD2B/'  cpage19
-useradd -u 1017 -g users -G wheel -c "Patrick Finnegan" -p '$6$0OJ49TG3$bHcpsVTQVgEKW1q7ORv5IR1xrhNTtSHqvJjg9lFHsYdhHngyRA.m5iUgUYFLHKpNvr2De2jFF/2LARJFAArTc/' finnegpt
+useradd -u 1017 -g wheel -c "Patrick Finnegan" -p '$6$0OJ49TG3$bHcpsVTQVgEKW1q7ORv5IR1xrhNTtSHqvJjg9lFHsYdhHngyRA.m5iUgUYFLHKpNvr2De2jFF/2LARJFAArTc/' finnegpt
 useradd -u 1018 -g users -c "Nick Frooninckx"  -p '$6$kc27N/WE.OTPBM4a$5s/RJrSpQ1Jm6rrBt3OQRLy3UxNFWaW72urXxO65KJrTKUwlMQFxI/yBieN4Es3kgByIdlQq7dvlkMZjDufZi1' leghost
 useradd -u 1019 -g users -c "Eduardo Wedekind" -p '$6$sOw2qNV9vRncEPa5$vb5tQ0ajc02rASM9ND27bUf3HIDysPPsHT9lrec0H13gmB.cHZEBbkcja7Xhik4B.HG.X/bYf4.iJo74r9jrE1' eduardo
 
