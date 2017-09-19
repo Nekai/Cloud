@@ -11,13 +11,13 @@ export PATH=/usr/local/bin/:/usr/local/sbin/:$PATH
 
 
 #Stop firewalld
-systemctl stop firewalld
-systemctl mask firewalld
+#systemctl stop firewalld
+#systemctl mask firewalld
 
 #Install and enable iptables
-yum -y install iptables-services #Install iptables
-systemctl enable iptables #enable iptables 
-service iptables start && service iptables save # start the service
+#yum -y install iptables-services #Install iptables
+#systemctl enable iptables #enable iptables 
+#service iptables start && service iptables save # start the service
 #iptables-save > /tmp/iptables.mod #Create an editable iptable
 
 #This spot for setting up IPTABLES (if it breaks)
