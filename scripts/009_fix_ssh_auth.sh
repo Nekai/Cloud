@@ -12,4 +12,4 @@ cp $FILES/etc/ssh/sshd_config $ROOTDEST/etc/ssh/
 
 
 #Eventually we will need to restart sshd service after running this on production level
-#sudo service sshd restart
+#service sshd restart
