@@ -33,7 +33,7 @@ $TORQUEPATH/torque-package-mom-linux-x86_64.sh
 cp $TORQUEPATH/trqauthd /etc/init.d
 chkconfig --add trqauthd
 echo /usr/local/lib > /etc/ld.so.conf.d/torque.conf
-ldconfig
+#ldconfig
 systemctl start trqauthd.service
 
 echo $hostname > /var/spool/torque/server_name # Set servername as hostname
@@ -42,13 +42,13 @@ echo $hostname > /var/spool/torque/server_name # Set servername as hostname
 cp $TORQUEPATH/pbs_server /etc/init.d
 chkconfig --add pbs_server
 echo /usr/local/lib > /etc/ld.so.conf.d/torque.conf
-ldconfig
+#ldconfig
 service pbs_servive restart
 
 cp $TORQUEPATH/pbs_mom /etc/init.d
 echo /usr/local/lib > /etc/ld.so.conf.d/torque.conf
 chkconfig --add pbs_mom
-ldconfig
+#ldconfig
 service pbs_mom restart
 
 
