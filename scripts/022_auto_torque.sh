@@ -20,7 +20,15 @@ export PATH=/usr/local/bin/:/usr/local/sbin/:$PATH
 #service iptables start && service iptables save # start the service
 #iptables-save > /tmp/iptables.mod #Create an editable iptable
 
-#This spot for setting up IPTABLES (if it breaks)
+#sed -i -e '/reject-with icmp-host-prohibited/ i \ #Remove this comment
+# Needed on the TORQUE server for client and MOM communication\
+#-A INPUT -p tcp --dport 15001 -j ACCEPT\ #Remove this comment
+#\ #Remove this comment
+# Needed on the TORQUE MOM for server and MOM communication\
+#-A INPUT -p tcp --dport 15002 -j ACCEPT\ #Remove this comment
+#-A INPUT -p tcp --dport 15003 -j ACCEPT\ #Remove this comment
+#' /tmp/iptables.mod #Remove this comment
+
 
 $TORQUEPATH/torque-package-clients-linux-x86_64.sh
 $TORQUEPATH/torque-package-devel-linux-x86_64.sh
