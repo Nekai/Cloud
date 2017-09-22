@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./000_config.sh
+source $(dirname "$BASH_SOURCE")/000_config.sh
 
 #Disable until next reboot
 setenforce 0

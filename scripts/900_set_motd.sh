@@ -4,7 +4,7 @@
 # with "Raider Cloud").
 
 # Pull in config settings... not really needed for this script, but ordnung!
-source 000_config.sh
+source $(dirname "$BASH_SOURCE")/000_config.sh
 
 head="
  ____          _      _                 ____  _                    _ 
