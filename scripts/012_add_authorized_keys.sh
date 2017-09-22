@@ -24,8 +24,7 @@ for dir in $SCRIPTS/keys/*; do
 	sshdir=$homedir/.ssh
 	if [[ ! -d $sshdir ]]; then
 		echo "${0}: Creating $sshdir for $user"
-		mkdir -p $sshdir
-		chown $user.users $sshdir
+		sudo -u $user mkdir -p $sshdir
 	fi
 
 	# OK, do we have any keys in $FILES/keys/<user> ?
@@ -33,6 +32,8 @@ for dir in $SCRIPTS/keys/*; do
  		# We expect keys in files
 		[[ ! -f $key ]] && continue
 		echo "${0}: Installing $key into $sshdir"
+		# Touch first (if file doesn't exist, ensures ownership by user)
+		sudo -u $user touch $sshdir/authorized_keys
 		cat $key >> $sshdir/authorized_keys
 	done
 done
