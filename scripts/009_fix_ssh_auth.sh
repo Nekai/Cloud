@@ -6,9 +6,12 @@
 source 000_config.sh
 
 
-# Our edited sshd_config
+# Our tweaks to SSHD configuration. Appending rather than overwriting.
 [ -d $ROOTDEST/etc/ssh/ ] || mkdir -p $ROOTDEST/etc/ssh/
-cp $SCRIPTS/etc/ssh/sshd_config $ROOTDEST/etc/ssh/
+cat >>$ROOTDEST/etc/ssh/sshd_config <<-EOF
+	# Make sure we allow password authentication
+	PasswordAuthentication yes
+EOF
 
 
 #Eventually we will need to restart sshd service after running this on production level
