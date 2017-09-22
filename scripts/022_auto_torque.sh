@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./000_config.sh
+source $(dirname "$BASH_SOURCE")/000_config.sh
 TORQUEPATH=$SCRIPTS/torque
 
 #Install all of torque's dependencies

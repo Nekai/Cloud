@@ -3,7 +3,7 @@
 
 
 # First source the config
-source 000_config.sh
+source $(dirname "$BASH_SOURCE")/000_config.sh
 
 
 # Our tweaks to SSHD configuration. Appending rather than overwriting.
