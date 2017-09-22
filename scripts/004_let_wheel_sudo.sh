@@ -18,3 +18,5 @@ cat > $ROOTDEST/etc/sudoers.d/wheel2sudo <<EOF
 # %wheel	ALL=(ALL)	NOPASSWD: ALL
 EOF
 
+# And proper permissions
+chmod 440 $ROOTDEST/etc/sudoers.d/wheel2sudo
