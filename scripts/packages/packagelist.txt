@@ -35,7 +35,7 @@ links
 htop
 ack
 
-# For Torque:
+# For Torque (even though we don't install it in the cloud):
 openssl-devel libxml2-devel boost-devel
 
 # For LAMMPS-Tersoff:
