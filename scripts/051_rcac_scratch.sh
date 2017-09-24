@@ -7,7 +7,7 @@
 source $(dirname "$BASH_SOURCE")/000_config.sh
 
 # Make top-level scratch link
-ln -s -t $ROOTDEST  ${ROOTDEST%%/}/shared/scratch
+ln -s --force -t $ROOTDEST  ${ROOTDEST%%/}/shared/scratch
 
 # Create rcac-scratch.sh
 mkdir -p $ROOTDEST/etc/profile.d
