@@ -20,6 +20,7 @@ dejagnu
 tcl tcl-devel
 flex
 autogen
+guile guile-dev
 zlib zlib-devel
 numactl numactl-devel
 fftw fftw-devel fftw-doc fftw-static
