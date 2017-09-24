@@ -12,3 +12,6 @@ PKGLIST=$SCRIPTS/packages/packagelist.txt
 # List is space- or newline-separated, with everything after any '#' 
 # considered a comment and ignored.
 yum install -y $(sed -e 's/#.*//' $PKGLIST)
+
+# And once again for good measure
+yum install -y $(sed -e 's/#.*//' $PKGLIST)
