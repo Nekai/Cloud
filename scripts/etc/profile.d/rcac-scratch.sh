@@ -1,7 +1,8 @@
 MYUID=$(id -u)
+ID=$(whoami)
 if [ $MYUID != 0 ]
 then
-	CLUSTER_SCRATCH=/shared/scratch/$MYUID
+	CLUSTER_SCRATCH=/shared/scratch/$ID
 	export CLUSTER_SCRATCH
         export RCAC_SCRATCH=$CLUSTER_SCRATCH
 
