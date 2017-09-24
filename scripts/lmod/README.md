@@ -16,3 +16,12 @@ In this directory:
   - 'RCAC_addons' are tweaks from RCAC (necessary for fresh installations).
     'build_lmod.sh' uses them, 'lmod-7.6.8_installed.tar.gz' has them 
     incorporated already (of course).
+
+
+# To make a packaged version for installation
+  - spin up a node with the same OS and same INIT (obviously)
+  - do the installation
+  - Use 
+	'tar --preserve -zcf lmod-X.Y.Z_installed.tar.gz /opt/lmod/lmod /opt/lmod/X.Y.Z' 
+    to package (key is using '--preserve' and not forgetting the 
+    /opt/lmod/lmod symlink).
