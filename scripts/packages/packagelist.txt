@@ -1,0 +1,44 @@
+# Packages to install.
+# One or several per line, space separated.
+# Anything past a first '#' on any line is considered a comment and ignored. 
+
+# General stuff
+git
+cmake
+patch patchutils
+redhat-lsb-core
+gcc gfortran gcc-c++
+
+# For Lmod:
+gcc lua-devel lua-filesystem lua-posix
+
+# More general stuff
+gmp
+mpfr
+libmpc
+dejagnu
+tcl tcl-devel
+flex
+autogen
+zlib zlib-devel
+numactl numactl-devel
+fftw fftw-devel fftw-doc fftw-static
+kernel-devel
+libstdc++.i686 glibc.i686 libgcc.i686
+glibc-static elfutils-devel-static elfutils-libelf-devel-static
+pdsh pdsh-mod-dshgroup pdsh-mod-torque
+# hsi_htar                # after adding RCAC repo
+finger
+libnl3
+links
+htop
+ack
+
+# Use system OpenMPI in the cloud (install from RPM)
+openmpi openmpi-devel
+
+# For Torque:
+openssl-devel libxml2-devel boost-devel
+
+# For LAMMPS-Tersoff:
+libjpeg-turbo libjpeg-turbo-static libjpeg-turbo-devel
