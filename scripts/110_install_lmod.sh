@@ -15,4 +15,4 @@ source $(dirname "$BASH_SOURCE")/000_config.sh
 yum install -y gcc lua-devel lua-filesystem lua-posix
 
 # And untar preinstalled tarball anchoring at / (note the '-C' option).
-tar -C $ROOTDEST --preserve -zxf $SCRIPTS/lmod-7.6.8_installed.tar.gz
+tar -C $ROOTDEST --preserve -zxf $SCRIPTS/lmod/lmod-7.6.8_installed.tar.gz
