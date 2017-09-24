@@ -35,9 +35,6 @@ links
 htop
 ack
 
-# Use system OpenMPI in the cloud (install from RPM)
-openmpi openmpi-devel
-
 # For Torque:
 openssl-devel libxml2-devel boost-devel
 
