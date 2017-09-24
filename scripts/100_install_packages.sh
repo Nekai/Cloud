@@ -11,7 +11,11 @@ PKGLIST=$SCRIPTS/packages/packagelist.txt
 # And go!
 # List is space- or newline-separated, with everything after any '#' 
 # considered a comment and ignored.
+echo "$BASH_SOURCE: First run"
 yum install -y $(sed -e 's/#.*//' $PKGLIST)
+echo
 
 # And once again for good measure
+echo "$BASH_SOURCE: Second run"
 yum install -y $(sed -e 's/#.*//' $PKGLIST)
+echo
