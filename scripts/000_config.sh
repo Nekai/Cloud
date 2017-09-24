@@ -14,7 +14,8 @@ SCRIPTS=$INIT/scripts/
 # And where the root of the destination filesystem is.
 # Things like '$INIT/../test' or '$HOME/test' are good for debugging.
 # Obviously should be set to "/" for production.
-ROOTDEST=$INIT/../test
+# ROOTDEST=$INIT/../test
+ROOTDEST=/
 if [ ! -d $ROOTDEST ]; then
      mkdir -p $ROOTDEST
 fi
