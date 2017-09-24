@@ -1,0 +1,958 @@
+#!/bin/tcsh -f
+#
+# $Id: buildopenmpi.csh,v 1.15 2017/08/22 19:37:02 aai Exp aai $.
+#
+#   Buildopenmpi - build OpenMPI as automatically as possible,
+#
+#   P. A. Cheeseman, Purdue University, 2014/10.
+#
+
+#set echo
+
+set e0 = `date +%s`
+
+set me = $0:t
+set me = $me:ar
+set mypath = $0:h
+set cluster = `hostname -s | cut -d- -f1`
+
+set amhere = `pwd`
+
+unset modulesdir
+
+which module > /dev/null
+if ( $status != 0 ) then
+    if ( -e /etc/profile.d/modules.csh ) source /etc/profile.d/modules.csh
+endif
+which module > /dev/null
+if ( $status == 0 ) then
+    set havemodules
+    foreach dir ( /opt/modulefiles/tools /opt/modulefiles /opt/modules/modulefiles )
+	if ( -d $dir ) then
+	    set modulesdir = $dir
+	    break
+	endif
+    end
+else
+    echo "   ${me}: Module command not available ..."
+    unset havemodules
+endif
+
+if ( $# < 1 ) then
+    goto usage
+endif
+
+#
+#   Get apps directory.
+#
+
+set r = `cat /etc/redhat-release | tr A-Z a-z`
+if ( "$r" !~ "*release*" ) then
+    echo "   ${me}: Cannot make sense of /etc/redhat-release."
+    exit ( 100 )
+endif
+if ( $r[1] =~ "red*" ) then
+    set s = rhel
+else
+    set s = cent
+endif
+set r = `echo $r | sed -e 's/.*release//' | cut -d. -f1`
+set appsdir = /apps/$s$r
+if ( ! ( -d $appsdir ) ) then
+    echo "   ${me}: Cannot determine apps directory - guess was $appsdir."
+    exit ( 100 )
+endif
+
+set e0 = `date +%s`
+set d0 = `date +"%Y/%m/%d %T"`
+set suf = `date +%Y.%m.%d`
+
+echo "Begin $me - $d0 ..."
+
+if ( $?havemodules && ( -d ~/modules/$cluster ) ) then
+    set mymods = ~/modules/$cluster
+    echo "   ${me}: Using $mymods ..."
+    module use $mymods
+endif
+
+#
+#   Left some arguments used in buildhdf5 in case they become handy.
+#
+
+set allargs = ( $* )
+
+set args = ( )
+
+set check
+set cnfopts = ( )
+set csmods = ( )
+unset cuda
+unset cudamod
+unset doinstall
+set domodule
+unset onlymods
+set parallel
+set usetrial
+unset shared
+unset static
+unset reinstall
+set rmfiles = ( )
+unset stupid
+unset tarfile
+set usetm
+unset where
+while ( $# > 0 )
+
+    switch ( "$1" )
+	case "-h*"
+	    goto usage
+	    breaksw
+
+	case "--*"
+	    set args = ( $args "$1" )
+	    set cnfopts = ( $cnfopts $1 )
+	    breaksw
+
+	case "check*"
+	    set args = ( $args "$1" )
+	    set check
+	    breaksw
+
+	case "cuda=*"
+	    set args = ( $args "$1" )
+	    set cudamod = `expr "$1" : 'cuda=\(.*\)'`
+	    set cuda
+	    breaksw
+
+	case "cuda*"
+	    set args = ( $args "$1" )
+	    set cuda
+	    breaksw
+
+	case "gcc=*"
+#	    set args = ( $args "$1" )
+	    set csmods = ( $csmods `expr "$1" : 'gcc=\(.*\)' | sed -e 's/,/ /g'` )
+	    breaksw
+
+	case "install*"
+	    set args = ( $args "$1" )
+	    set doinstall
+	    breaksw
+
+	case "modules*"
+	    set args = ( $args "$1" )
+	    set onlymods
+	    breaksw
+
+	case "nocheck*"
+	    set args = ( $args "$1" )
+	    unset check
+	    breaksw
+
+	case "nomodule*"
+	    set args = ( $args "$1" )
+	    unset domodule
+	    breaksw
+
+	case "noparallel*"
+	    set args = ( $args "$1" )
+	    unset parallel
+	    breaksw
+
+	case "notm*"
+	    set args = ( $args "$1" )
+	    unset usetm
+	    breaksw
+
+	case "nopending*"
+	case "notrial*"
+	    set args = ( $args "$1" )
+	    unset usetrial
+	    breaksw
+
+	case "pending*"
+	case "trial*"
+	    set args = ( $args "$1" )
+	    set usetrial
+	    breaksw
+
+	case "prefix=*"
+	    set args = ( $args "$1" )
+	    set where = `expr "$1" : 'prefix=\(.*\)'`
+	    if ( $%where < 1 ) unset where
+	    breaksw
+
+	case "reinstall*"
+	    set args = ( $args "$1" )
+	    set reinstall
+	    breaksw
+
+	case "shared*"
+	    set args = ( $args "$1" )
+	    set shared
+	    breaksw
+
+	case "static*"
+	    set args = ( $args "$1" )
+	    set static
+	    breaksw
+
+        default
+	    if ( ( "$1" =~ "intel/*" ) || ( "$1" =~ "gcc/*" ) || ( "$1" =~ "pgi/*" ) ) then
+		set csmods = ( $csmods `echo $1 | sed -e 's/,/ /g'` )
+	    else
+		if ( ( ( $1:e == tgz ) || ( $1:e == gz ) || ( $1:e == tar ) ) && ( -f $1 ) ) then
+		    set tarfile = $1
+		else
+		    echo "   ${me}: Cannot recognize $1 as compiler suite or tarball."
+		    exit ( 100 )
+		endif
+	    endif
+	    breaksw
+    endsw
+
+    shift
+
+end
+
+if ( $?havemodules ) then
+
+#
+#   Load pending if selected.
+#
+
+    if ( $?usetrial ) then
+	set trialmods = /opt/modulefiles/trial
+	set trialdirs = ( )
+	if ( -d $trialmods ) then
+	    set r = `ls $trialmods`
+	    foreach dir ( $r )
+		if ( ! ( -d $trialmods/$dir ) ) continue
+		echo "   ${me}: Using $trialmods/$dir as module directory ..."
+		module use $trialmods/$dir
+		set trialdirs = ( $trialdirs $trialmods/$dir )
+	    end
+	endif
+    endif
+
+else
+    if ( $#csmods > 0 ) then
+	echo "   ${me}: No module command available - faking module loads ..."
+#	exit ( 100 )
+    endif
+endif
+
+if ( $?tarfile ) then
+    if ( ! ( -e $tarfile ) ) then
+	echo "   ${me}: Problem - $tarfile does not exist."
+	exit ( 100 )
+    endif
+    set atarfile = `readlink -e $tarfile`
+    echo "   ${me}: Extracting $tarfile in $amhere ..."
+    if ( "$tarfile:e" =~ "*gz" ) then
+	tar xzf $tarfile
+    else
+	tar xf $tarfile
+    endif
+    set r = $tarfile:t
+    set r = $r:r
+    if ( $r:e == tar ) set r = $r:r
+    cd $r
+    set amhere = `pwd`
+    echo "   ${me}: Working directory is now $amhere ..."
+    set atarfile = `readlink -e $tarfile`
+    if ( -w $atarfile:h ) then
+	echo $d0 $cluster $me $allargs >> $atarfile:h/$me.cmd
+    else
+	echo $d0 $cluster $me $allargs >> $me.cmd
+    endif
+else
+    echo $d0 $cluster $me $allargs >> $me.cmd
+    @ e = 0
+    if ( $amhere:t !~ "openmpi-*" ) then
+	echo "   ${me}: This directory is not named like the top of an OpenMPI source tree."
+	@ e += 1
+    endif
+    if ( ! ( -f configure ) ) then
+	echo "   ${me}: Cannot find configure script in $amhere:t ..."
+	@ e += 1
+    endif
+    if ( $e > 0 ) then
+	echo "   ${me}: This directory cannot be used to run $me - apparently not top of source tree."
+	exit ( 1 )
+    endif
+endif
+
+
+set myver = `echo $amhere:t | cut -d- -f2`
+
+#./configure --prefix=$PREFIX \
+#--enable-cxx-exceptions \
+#--with-tm=/usr/pbs \
+#--with-openib \
+#--enable-orterun-prefix-by-default \
+#--enable-static \
+#--enable-shared \
+#--with-pic \
+#--with-wrapper-ldflags="-Wl,-R${LD_LIBRARY_PATH}"
+
+#set staticopts = ( --enable-static --disable-shared --enable-cxx-exceptions --with-libltdl=/usr --enable-orterun-prefix-by-default --with-pic $cnfopts )
+
+#set sharedopts = ( --enable-static --enable-cxx-exceptions --with-libltdl=/usr --enable-orterun-prefix-by-default --with-pic $cnfopts )
+
+set staticopts = ( --enable-static --disable-shared --enable-orterun-prefix-by-default --with-pic $cnfopts )
+
+set sharedopts = ( --enable-shared --enable-orterun-prefix-by-default --with-pic $cnfopts )
+
+#set staticopts = ( --enable-static --disable-shared --enable-cxx-exceptions --enable-orterun-prefix-by-default --with-pic $cnfopts )
+
+#set sharedopts = ( --enable-static --enable-cxx-exceptions --enable-orterun-prefix-by-default --with-pic $cnfopts )
+
+#
+#   C++ handling was changed at about V2, apparently permanently.
+#      Am carrying forward deprecated C++ options for V2 but letting the
+#      defaults take over after that.  Position here is that the OpenMPI
+#      keepers know what's best.
+#
+
+if ( $myver:ar =~ "2*" ) then
+    set staticopts = ( --enable-mpi-cxx --enable-cxx-exceptions $staticopts )
+    set sharedopts = ( --enable-mpi-cxx --enable-cxx-exceptions $sharedopts )
+else
+    if ( $myver:ar < 2 ) then
+	set staticopts = ( --enable-cxx-exceptions $staticopts )
+	set sharedopts = ( --enable-cxx-exceptions $sharedopts )
+    endif
+endif
+
+
+if ( -e /usr/include/infiniband/verbs.h ) then
+    set staticopts = ( --with-verbs $staticopts )
+    set sharedopts = ( --with-verbs $sharedopts )
+endif
+if ( $?usetm && ( -e /usr/pbs/include/tm.h ) ) then
+    set staticopts = ( --with-tm=/usr/pbs $staticopts )
+    set sharedopts = ( --with-tm=/usr/pbs $sharedopts )
+endif
+
+#
+#   Deal with CUDA if loaded (CUDA_HOME defined sensibly).
+#
+
+if ( $?cudamod ) then
+    if ( $?havemodules ) then
+	module load $cudamod
+    else
+	echo "   ${me}: Cannot load $cudamod - no module command."
+	exit ( 100 )
+    endif
+endif
+
+
+set extlist=affinity,cr
+if ( $?cuda ) then
+    if ( $?CUDA_HOME ) then
+	set canary = $CUDA_HOME/lib64/libcudart.so
+	if ( -e $canary ) then
+	    set staticopts = ( --with-cuda=$CUDA_HOME $staticopts )
+	    set sharedopts = ( --with-cuda=$CUDA_HOME $sharedopts )
+	    set extlist=${extlist},cuda
+	else
+	    echo "   ${me}: Problem - CUDA build selected but cannot locate $canary."
+	    exit ( 101 )
+	endif
+    else
+	echo "   ${me}: Problem - CUDA build selected but CUDA_HOME not defined."
+	exit ( 101 )
+    endif
+endif
+
+# LG: Commented out (--enable-mpi-ext is 'all' by default, no need to bother)
+# set staticopts = ( --enable-mpi-ext=$extlist $staticopts )
+# set sharedopts = ( --enable-mpi-ext=$extlist $sharedopts )
+set staticopts = ( $staticopts )
+set sharedopts = ( $sharedopts )
+
+#
+#   Use system installation point if none given.
+#
+
+if ( ! $?where ) set where = $appsdir/openmpi
+
+#
+#   Default to do every suite we can find for compilers.
+#
+
+if ( $?havemodules ) then
+    if ( $#csmods < 1 ) then
+	foreach fam ( gcc intel pgi )
+	    if ( -d $modulesdir/$fam ) set csmods = ( $csmods `ls $modulesdir/$fam | sed -e 's/^/'$fam'\//' -e 's/\.lua//'` )
+	    if ( $?mymods ) then
+		if ( -d $mymods/$fam ) set csmods = ( $csmods `ls $mymods/$fam | sed -e 's/^/'$fam'\//' -e 's/\.lua//'` )
+	    endif
+	end
+	if ( $?usetrial ) then
+#	    set trialdir = `( module show trial ) | & fgrep /opt | sed -e /:/d -e 's/.*\/opt/\/opt/' -e 's/"//g'`
+	    foreach trialdir ( $trialdirs )
+		if ( -d $trialdir/intel ) set csmods = ( $csmods `ls $trialdir/intel | sed -e 's/^/intel\//' -e 's/\.lua//'` )
+		if ( -d $trialdir/gcc ) set csmods = ( $csmods `ls $trialdir/gcc | sed -e 's/^/gcc\//' -e 's/\.lua//'` )
+		if ( -d $trialdir/pgi ) set csmods = ( $csmods `ls $trialdir/pgi | sed -e 's/^/pgi\//' -e 's/\.lua//'` )
+	    end
+	endif
+	set csmods = `echo $csmods | sed -e 's/ /\n/g' | sed -e /default/d`
+    endif
+    set r = ( )
+    @ i = 1
+    while ( $i <= $#csmods )
+	if ( $csmods[$i] == GCC ) break
+	if ( ! ( -f $modulesdir/$csmods[$i] ) ) then
+	    if ( -d $modulesdir/$csmods[$i] ) then
+		set r = ( $r `ls $modulesdir/$csmods[$i] | sed -e 's,^,'$csmods[$i]'\/,'` )
+		set csmods[$i] = ''
+	    endif
+	endif
+	@ i += 1
+    end
+    set csmods = ( $csmods $r )
+    set csmods = `echo $csmods | sed -e 's/ /\n/g' | sed -e 's/\.lua$//' | sort -u`
+endif
+
+if ( $#csmods > 0 ) then
+    echo "   ${me}: Building for ..."
+    echo $csmods | sed -e 's/ /\n/g' | sed -e 's/^/                 /'
+else
+    echo "   ${me}: Building for system gcc ..."
+    set csmods = ( GCC )
+endif
+
+test -t 1
+if ( $status == 0 ) then
+    echo "   ${me}: Sleeping 15 seconds so you can think it over :-) ..."
+    sleep 15
+endif
+
+#
+#   Farm out parallel builds if we're a PBS job.
+#
+
+onintr choke
+set pids = ( )
+@ pb = 0
+if ( $?parallel && $?PBS_NODEFILE && ( $#csmods > 1 ) && $?tarfile ) then
+    echo "   ${me}: Parallelizing builds ..."
+    if ( ! ( -d /tmp/$USER/$me ) ) then
+	echo "   ${me}:    Creating /tmp/$USER/$me ..."
+	mkdir -p /tmp/$USER/$me
+    endif
+    cd /tmp/$USER/$me
+    set dirs = ( )
+    foreach csmod ( $csmods )
+	set dir = `echo $csmod | sed -e 's/\//-/g'`
+	set dirs = ( $dirs $dir )
+	if ( ! ( -d $dir ) ) then
+	    echo "   ${me}:       Creating /tmp/$USER/$me/$dir/$amhere:t ..."
+	    mkdir $dir
+	endif
+	cd $dir
+#	rsync -rl --size-only $amhere .
+	if ( "$tarfile:e" =~ "*gz" ) then
+	    tar xzf $atarfile
+	else
+	    tar xf $atarfile
+	endif
+	cd $amhere:t
+	echo "                       $0 prefix=$where noparallel $args gcc=$csmod >& $amhere/$me.$dir.log &"
+	$0 prefix=$where noparallel $args gcc=$csmod >& $amhere/$me.$dir.log &
+	set pids = ( $pids $! )
+	cd ../..
+    end
+    @ pb = $#pids
+    set e1 = `date +%s`
+    echo "   ${me}:    Waiting for $#pids processes - 30 second cycle time ..."
+    while ( $#pids > 0 )
+	sleep 30
+	@ i = 1
+	while ( $i <= $#pids )
+	    set pid = $pids[$i]
+	    set r = `ps -o comm= $pid`
+	    if ( $status != 0 ) then
+		echo "   ${me}:       $pid apparently complete ..."
+		set pids[$i] = ''
+	    else
+		if ( $r != $me ) then
+		    echo "   ${me}:       $pid no longer $me ..."
+		    set pids[$i] = ''
+		endif
+	    endif
+	    @ i += 1
+	end
+	set pids = ( $pids )
+	set t = `date +%T`
+	set e = `date +%s`
+	@ e -= $e1
+	echo "   ${me}:       $#pids $me processes remaining at $t - $e seconds elapsed ..."
+    end
+    set e = `date +%s`
+    @ e -= $e1
+    @ s = $e
+    @ h = $s / 3600
+    @ s -= ( $h * 3600 )
+    @ m = $s / 60
+    @ s -= ( $m * 60 )
+    set r = `printf "%d:%02d:%02d" $h $m $s`
+    if ( $pb > 0 ) echo "   ${me}:    Completed $pb processes in $e seconds ($r) ..."
+    echo "   ${me}:    Creating tgz of working directories - $amhere/$me.$myver.tgz ..."
+    tar czf $amhere/$me.$myver.tgz $dirs
+    cd $amhere
+    goto alldone
+endif
+
+echo "   ${me}: Building for ..."
+echo $csmods | sed -e 's/ /\n/g' | sed -e 's/^/                    /'
+if ( $?doinstall || $?reinstall ) then
+    if ( $where =~ "/apps/*" ) then
+	if ( $where:t != $myver ) set where = $where/$myver
+	echo "   ${me}: Installing in $where ..."
+    else
+	echo "   ${me}: Installing in $where/${myver}_* ..."
+    endif
+    echo "   ${me}: "'Build logs will be {distclean,config,make,check,install}.module.{static,shared}.{log,lst} ...'
+else
+    echo "   ${me}: "'Build logs will be {make,check}.module.{static,shared}.log ...'
+endif
+
+set installs = ( )
+
+unset CFLAGS
+unset CXXLAGS
+
+foreach csmod ( $csmods )
+
+    if ( $?reinstall || $?doinstall ) then
+	set inst
+    else
+	unset inst
+    endif
+
+#
+#   If installation directory is an apps/cluster directory, set -xHost.
+#
+
+    set r = `echo $where | sed -e s'/\// /3'`
+    if ( $r[1] == /apps/$cluster ) then
+	if ( csmod =~ "intel*" ) then
+	    if ( $?CFLAGS ) then
+		setenv CFLAGS ( -xHost $CFLAGS )
+	    else
+		setenv CFLAGS -xHost
+	    endif
+	endif
+    endif
+    echo "   ${me}: Purging modules ..."
+    module purge
+    unset CC
+    unsetenv CC
+    unset FC
+    unsetenv FC
+    unset LD_LIBRARY_PATH
+    unsetenv LD_LIBRARY_PATH
+    if ( $csmod == GCC ) then
+	setenv CC gcc
+	setenv FC gfortran
+	set sufmod = gcc-`$CC -v |& tail -1 | cut -d\  -f3`
+    else
+	unset CC
+	unsetenv CC
+	module load $csmod
+	if ( ! $?CC ) then
+	    echo "   ${me}: Did not load $csmod - CC not defined in environment ..."
+	    goto alldone
+	endif
+	set sufmod = `echo $csmod | sed -e 's/\//-/g'`
+    endif
+
+    if ( $where:t == $myver ) then
+	set prefix = $where/$sufmod
+    else
+	set prefix = $where/${myver}_$sufmod
+    endif
+    echo "   ${me}: Prefix for final install is $prefix ..."
+    sleep 10
+    if ( ! ( -d $prefix ) ) then
+	echo
+	echo "========================================================"
+	echo "   ${me}: Creating $prefix ..."
+	mkdir -p $prefix
+	if ( $status != 0 ) exit ( 100 )
+	echo "========================================================"
+	echo
+    endif
+    set aprefix = `readlink -e $prefix`
+
+    if ( $?onlymods ) then
+	echo "   ${me}: Skipping to module file creation per command line argument 'modules' ..."
+	goto endbuild
+    endif
+    if ( -d $aprefix/bin ) then
+	set r = `ls $aprefix/bin | wc -l`
+	if ( $r > 0 ) then
+	    echo
+	    echo "========================================================"
+	    echo "   ${me}: Found non-empty $aprefix/bin ..."
+	    if ( $?reinstall ) then
+		echo "   ${me}:    Reinstall implies an overwrite ..."
+#		rm -rf $aprefix/* >& /dev/null
+	    else
+		if ( $?doinstall ) then
+		    echo "   ${me}:    Skipping build for $csmod - installation exists in $prefix ..."
+		    echo "========================================================"
+		    goto endbuild
+		else
+		    echo "   ${me}:    Building only for $csmod - installation exists in $prefix ..."
+		    unset inst
+		endif
+	    endif
+	    echo "========================================================"
+	    echo
+	endif
+    endif
+
+#
+#   Set up linker options.
+#
+
+    set cflink = ''
+    set linkopts = ( )
+    if ( $?LD_LIBRARY_PATH ) then
+	set r = `echo $LD_LIBRARY_PATH | sed -e 's/:/ /g'`
+	foreach i ( $r )
+	    set linkopts = ( $linkopts -Wl,-rpath -Wl,$i )
+	end
+#	set cflink = ( --with-wrapper-ldflags='"'$linkopts'"' )
+	set cflink = ( --with-wrapper-ldflags=$linkopts )
+    endif
+
+    if ( $?shared ) goto doshared
+
+dostatic:
+    set logs = ( )
+    echo
+    echo "========================================================"
+    echo "   ${me}: Cleaning for $csmod - static ..."
+    echo "========================================================"
+    echo
+    make distclean |& tee distclean.$sufmod.static.log
+    set logs = ( $logs distclean.$sufmod.static.log )
+
+    echo
+    echo "========================================================"
+    echo "   ${me}: Configuring for $csmod - static ..."
+    echo "========================================================"
+    echo
+#    echo ./configure --prefix=$aprefix $staticopts \"$cflink\" ...
+#    echo ./configure --prefix=$aprefix $staticopts \"$cflink\" | & tee config.$sufmod.static.lst > config.$sufmod.static.lst
+    echo ./configure --prefix=$aprefix $staticopts ...
+    echo ./configure --prefix=$aprefix $staticopts | & tee config.$sufmod.static.lst > config.$sufmod.static.lst
+
+#    ./configure --prefix=$aprefix $staticopts --with-wrapper-ldflags="-Wl,-R${LD_LIBRARY_PATH}" | & tee -a config.$sufmod.static.lst
+#    ./configure --prefix=$aprefix $staticopts "$cflink" | & tee -a config.$sufmod.static.lst
+    ./configure --prefix=$aprefix $staticopts | & tee -a config.$sufmod.static.lst
+    cp config.log config.$sufmod.static.log
+    set logs = ( $logs config.$sufmod.static.lst config.$sufmod.static.log )
+
+    echo
+    echo "========================================================"
+    echo "   ${me}: Running make for $csmod - static ..."
+    echo "========================================================"
+    echo
+    make |& tee make.$sufmod.static.log
+    if ( $status != 0 ) then
+	echo
+	echo "========================================================"
+	echo "   ${me}:    Non-zero exit from make - abandoning $csmod ..."
+	echo "========================================================"
+	echo
+	continue
+    endif
+    set logs = ( $logs make.$sufmod.static.log )
+
+    echo
+    echo "========================================================"
+    echo "   ${me}: Running check for $csmod - static ..."
+    echo "========================================================"
+    echo
+    make check |& tee check.$sufmod.static.log
+    if ( $status != 0 ) then
+	echo
+	echo "========================================================"
+	echo "   ${me}:    Non-zero exit from check - abandoning $csmod ..."
+	echo "========================================================"
+	echo
+	continue
+    endif
+    set logs = ( $logs check.$sufmod.static.log )
+
+    if ( $?inst ) then
+	echo
+	echo "========================================================"
+	echo "   ${me}: Installing in $prefix for $csmod - static ..."
+	echo "========================================================"
+	echo
+	make install |& tee install.$sufmod.static.log
+	set installs = ( $installs $aprefix )
+	if ( ( -d /etc/openmpi ) && ( -d $aprefix/etc ) ) then
+	    echo
+	    echo "========================================================"
+	    echo "   ${me}: Linking to /etc/openmpi if appropriate ..."
+	    cd $aprefix/etc
+	    foreach file ( /etc/openmpi/* )
+		if ( -e $file:t ) then
+		    echo "   ${me}:    Moving $file:t -> $file:t.bak ..."
+		    mv $file:t $file:t.bak
+		    echo "   ${me}:    Linking $file ..."
+		    ln -s $file
+		endif
+	    end
+	    cd $amhere
+	    echo "========================================================"
+	    echo
+	endif
+	set logs = ( $logs install.$sufmod.static.log )
+	cp $logs $prefix
+	if ( ! $?static ) then
+	    echo
+	    echo "========================================================"
+	    echo "   ${me}: Backing up $prefix/bin for $csmod - static ..."
+	    echo "========================================================"
+	    echo
+	    cd $aprefix
+	    tar cvf bin.tar bin
+	    cd $amhere
+	endif
+    else
+	continue
+    endif
+
+if ( $?static ) goto endbuild
+
+doshared:
+    set logs = ( )
+    echo
+    echo "========================================================"
+    echo "   ${me}: Cleaning for $csmod - shared ..."
+    echo "========================================================"
+    echo
+    make distclean |& tee distclean.$sufmod.shared.log
+    set logs = ( $logs distclean.$sufmod.shared.log )
+
+    echo
+    echo "========================================================"
+    echo "   ${me}: Configuring for $csmod - shared ..."
+    echo "========================================================"
+    echo
+    if ( ! $?LD_LIBRARY_PATH ) setenv LD_LIBRARY_PATH /usr/lib64
+#    echo ./configure --prefix=$aprefix $sharedopts \"$cflink\" ...
+#    echo ./configure --prefix=$aprefix $sharedopts \"$cflink\" | & tee config.lst > config.$sufmod.shared.lst
+    echo ./configure --prefix=$aprefix $sharedopts ...
+    echo ./configure --prefix=$aprefix $sharedopts | & tee config.lst > config.$sufmod.shared.lst
+#    ./configure --prefix=$aprefix $sharedopts --with-wrapper-ldflags="-Wl,-R${LD_LIBRARY_PATH}" | & tee -a config.$sufmod.shared.lst
+#    ./configure --prefix=$aprefix $sharedopts "$cflink" | & tee -a config.$sufmod.shared.lst
+    ./configure --prefix=$aprefix $sharedopts | & tee -a config.$sufmod.shared.lst
+    cp config.log config.$sufmod.shared.log
+    set logs = ( $logs config.$sufmod.shared.lst config.$sufmod.shared.log )
+
+    echo
+    echo "========================================================"
+    echo "   ${me}: Running make for $csmod - shared ..."
+    echo "========================================================"
+    echo
+    make |& tee make.$sufmod.shared.log
+    if ( $status != 0 ) then
+	echo "   ${me}: Non-zero exit from make - abandoning $csmod ..."
+	echo
+	echo "========================================================"
+	echo "   ${me}:    Non-zero exit from make - abandoning $csmod ..."
+	echo "========================================================"
+	echo
+	continue
+    endif
+    set logs = ( $logs make.$sufmod.shared.log )
+
+    echo
+    echo "========================================================"
+    echo "   ${me}: Running check for $csmod - shared ..."
+    echo "========================================================"
+    echo
+    make check |& tee check.$sufmod.shared.log
+    if ( $status != 0 ) then
+	echo
+	echo "========================================================"
+	echo "   ${me}:    Non-zero exit from check - abandoning $csmod ..."
+	echo "========================================================"
+	echo
+	continue
+    endif
+    set logs = ( $logs check.$sufmod.shared.log )
+
+    if ( $?inst ) then
+	echo
+	echo "========================================================"
+	echo "   ${me}: Installing in $prefix for $csmod - shared ..."
+	echo "========================================================"
+	echo
+	make install |& tee install.$sufmod.shared.log
+	set installs = ( $installs $aprefix )
+	if ( ( -d /etc/openmpi ) && ( -d $aprefix/etc ) ) then
+	    echo
+	    echo "========================================================"
+	    echo "   ${me}: Linking to /etc/openmpi if appropriate ..."
+	    cd $aprefix/etc
+	    foreach file ( /etc/openmpi/* )
+		if ( -e $file:t ) then
+		    echo "   ${me}:    Moving $file:t -> $file:t.bak ..."
+		    mv $file:t $file:t.bak
+		    echo "   ${me}:    Linking $file ..."
+		    ln -s $file
+		endif
+	    end
+	    cd $amhere
+	    echo "========================================================"
+	    echo
+	endif
+	set logs = ( $logs install.$sufmod.shared.log )
+	cp $logs $prefix
+	if ( ! $?shared ) then
+	    cd $aprefix
+	    echo
+	    echo "========================================================"
+	    echo "   ${me}: Restoring static executables in $prefix/bin for $csmod static ..."
+	    echo "========================================================"
+	    tar xvf bin.tar
+	    rm bin.tar
+	    cd $amhere
+	endif
+    endif
+
+endbuild:
+
+    if ( $?inst ) then
+	if ( $?domodule ) then
+	    echo $sharedopts | sed -e 's/ /\n/g' | fgrep with-tm= > /dev/null
+	    if ( $status == 0 ) then
+		set mftbase = $mypath/$me.mft
+	    else
+		set mftbase = $mypath/$me.notm.mft
+	    endif
+#	    foreach flavor ( lua tcl )
+	    foreach flavor ( lua )
+		if ( -f $mftbase.$flavor ) then
+		    set modulesdir = ~/modules/$cluster/openmpi
+		    if ( ! ( -d $modulesdir ) ) then
+			echo "   ${me}:    Creating $modulesdir ..."
+			mkdir -p $modulesdir
+		    endif
+		    if ( $?cuda ) then
+			set modulefile = ${myver}_${sufmod}_gpu.$flavor
+		    else
+			set modulefile = ${myver}_$sufmod.$flavor
+		    endif
+		    echo
+		    echo "========================================================"
+		    echo "   ${me}: Checking $modulesdir for $modulefile ..."
+		    if ( -x $prefix/bin/mpicc ) then
+			if ( -f $modulesdir/$modulefile ) then
+			    echo "   ${me}:    Replacing $modulesdir/$modulefile ..."
+			else
+			    echo "   ${me}:    Creating $modulesdir/$modulefile ..."
+			endif
+			set pfx = `echo $prefix | sed -e 's/-ofa//'`
+#			sed -e s/OMPIVER/$myver/g -e s/COMPILERSUITE/$sufmod/g -e s,PREFIX,$pfx,g -e s,OFAPFX,${pfx:h}-ofa/$modulefile,g -e s,COMPILERMODULE,$csmod,g < $mftbase.$flavor > $modulesdir/$modulefile
+			sed -e s/OMPIVER/$myver/g -e s/COMPILERSUITE/$sufmod/g -e s,PREFIX,$pfx,g -e s,OFAPFX,${pfx:h}-ofa/$modulefile,g < $mftbase.$flavor > $modulesdir/$modulefile
+			if ( $?cudamod ) then
+			    echo "   ${me}:       Appending load of $cudamod ..."
+			    echo 'load("'$cudamod'")' >> $modulesdir/$modulefile
+			endif
+			if ( -d $prefix ) then
+			    echo "   ${me}:    Backing up $modulesdir/$modulefile -> $prefix/$modulefile ..."
+			    cp $modulesdir/$modulefile $prefix
+			endif
+		    else
+			echo "   ${me}:    Abandoning/removing $modulesdir/$modulefile - no $prefix/bin/mpicc executable ..."
+			if ( -f $modulesdir/$modulefile ) rm -f $modulesdir/modulefile
+		    endif
+		    echo "========================================================"
+		    echo
+		endif
+	    end
+	endif
+    endif
+
+    echo
+    echo "========================================================"
+    echo "   ${me}:    Completed $csmod ..."
+    echo "========================================================"
+    echo
+    if ( -d $prefix ) then
+	echo $d0 $cluster $me $allargs >> $prefix/$me.cmd
+	cp $0 $prefix
+    endif
+
+    @ pb += 1
+
+end
+
+set installs = `echo $installs | sed -e 's/ /\n/g' | sort -u`
+echo "   ${me}: Installed $#installs builds ..."
+echo $installs | sed -e 's/ /\n/g' | sed -e 's/^/   '${me}:'    /'
+
+
+alldone:
+set r = `date +%s`
+@ r = $r - $e0
+@ s = $r
+@ h = $s / 3600
+@ s -= ( $h * 3600 )
+@ m = $s / 60
+@ s -= ( $m * 60 )
+set t = `printf "%d:%02d:%02d" $h $m $s`
+echo "   End $me - $pb builds - $r seconds ($t) elapsed."
+
+exit ( 0 )
+
+choke:
+
+if ( $#pids > 0 ) then
+    echo "   ${me}: Killing $pids ..."
+    kill -INT $pids
+    echo "   ${me}: There are likely several sub-processes to clean."
+endif
+
+exit ( 1 )
+
+usage:
+    echo "   Usage:  $me [gcc=compilermods] [prefix=where] [tarball] [install] [modules] [noparallel] [[no]trial] [reinstall] [configureoptions] "
+cat << enddoc:
+
+   Where:  compilermods is a list of compiler suite modules separated
+              by commas.
+           where is the parent directory for the installations, for instance
+              /apps/rhel6/openmpi-ofa.
+           tarball is a source tarball to be extracted.  If not specified,
+              $me assumes it is at the top of an OpenMPI source tree.
+           install requests a 'make install' ...
+           modules requests creation of modulefiles only (requires template
+              file $me.mft.{tcl,lua} in same directory as $me) ...
+           notrial ensures that trial modules will not be searched for compiler
+              suite modules.
+           trial (the current default) allows searching the trial modules for
+              compiler suite modules.
+           noparallel disables parallel builds if multiple compiler suites
+              are specified or defaulted to all available ...
+           reinstall requests a 'make install' even if the installation
+              already exists ...
+           configureoptions is anything that begins with '--'.
+
+enddoc:
+
+exit ( 1 )
+
