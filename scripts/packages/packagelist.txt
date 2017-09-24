@@ -26,7 +26,7 @@ fftw fftw-devel fftw-doc fftw-static
 kernel-devel
 libstdc++.i686 glibc.i686 libgcc.i686
 glibc-static elfutils-devel-static elfutils-libelf-devel-static
-pdsh pdsh-mod-dshgroup pdsh-mod-torque
+pdsh pdsh-mod-dshgroup
 # hsi_htar                # after adding RCAC repo
 finger
 libnl3
