@@ -7,7 +7,7 @@ setenforce 0
 
 #disable it permanently
 #sed -i 's/enforcing/disabled' /etc/sysconfig/selinux
-sed -i -e '/^SELINUX=/ s/.*/SELINUX=disabled/' /etc/sysconfig/selinux #thanks lev
-sed -i -e '/^SELINUX=/ s/.*/SELINUX=disabled/' /etc/selinux/config #here too for good measure
+sed -i -e '/^[[:blank:]]*SELINUX[[:blank:]]*=/ s/.*/SELINUX=disabled/' /etc/sysconfig/selinux #thanks lev
+sed -i -e '/^[[:blank:]]*SELINUX[[:blank:]]*=/ s/.*/SELINUX=disabled/' /etc/selinux/config #here too for good measure
 
 
