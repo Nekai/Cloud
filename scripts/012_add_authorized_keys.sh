@@ -17,7 +17,7 @@ for dir in $SCRIPTS/keys/*; do
 	user=${dir##*/}
 
 	# Dude, do you exist?
-	homedir=/home/$user 		# Crude and wrong, but works for us
+	homedir=$(getent passwd $user | cut -f6 -d:)
 	[[ ! -d $homedir ]] && continue
 
 	# Make user a .ssh directory if necessary
