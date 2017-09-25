@@ -3,7 +3,7 @@
 # Populate users' authorized_keys, if any.
 #
 # Place them in $SCRIPTS/<username>/*.pub, and the script would append them 
-# to /home/<username>/.ssh/authorized_keys
+# to ~username/.ssh/authorized_keys
 
 # Pull in config settings... not really needed for this script, but ordnung!
 source $(dirname "$BASH_SOURCE")/000_config.sh
