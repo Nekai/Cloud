@@ -27,13 +27,22 @@ for dir in $SCRIPTS/keys/*; do
 		sudo -u $user mkdir -p $sshdir
 	fi
 
+	# If the user already *has* an authorized_keys file, this means
+	# that we are on a slave node and are hitting a shared homedir 
+	# that has previously been createed on a master (and already had
+	# everything copied back then).  So just skip it to avoid duplication.
+	if [[ -e $sshdir/authorized_keys ]]; then
+		echo "${0}: Skipping existing $sshdir/authorized_keys for $user"
+		continue
+	fi
+
 	# OK, do we have any keys in $FILES/keys/<user> ?
 	for key in $dir/* ; do
  		# We expect keys in files
 		[[ ! -f $key ]] && continue
 		echo "${0}: Installing $key into $sshdir"
 		# Touch first (if file doesn't exist, ensures ownership by user)
-		sudo -u $user touch $sshdir/authorized_keys
-		cat $key >> $sshdir/authorized_keys
+#DEBUG		sudo -u $user touch $sshdir/authorized_keys
+#DEBUG		cat $key >> $sshdir/authorized_keys
 	done
 done
