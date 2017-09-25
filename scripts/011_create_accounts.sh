@@ -6,6 +6,10 @@
 # Pull in config settings... not really needed for this script, but ordnung!
 source $(dirname "$BASH_SOURCE")/000_config.sh
 
+# Cloudinit has shared homes under /shared/home as opposed to usual /home.
+# Change useradd default to create our users under shared one!
+useradd -D -b /shared/home
+
 # HHS
 useradd -u 1010 -g users -G wheel -c "Chuck Schwarz" -p '$6$Db6M1nOH3bdT3fbu$GGbeO0eYSS7p6xMf21lIsjtqwD1pMzqxmyFVdtzJo6mQtpd5FrQ8FhyXDl24y46iNHKvNOcnvKcJL8oCQz352.' chuck
 useradd -u 1011 -g users -G wheel -c "Lev Gorenstein"   -p '$6$3.fHvkWXMVqm7JzP$20kNcI7cZHLaQu8/waPbo9NqiI3iAqiXtD4m.Za6/13Jogd7lmWr8GuNaCiljZNtx199ZI1q4dJzYwlVeIFqq0' lev
