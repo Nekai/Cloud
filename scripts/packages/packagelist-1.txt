@@ -32,3 +32,4 @@ libnl3
 links
 htop
 ack
+zsh zsh-lovers
