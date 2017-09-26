@@ -20,7 +20,7 @@ useradd -u 1015 -g users -G wheel -c "Callum Gundlach"  -p '$6$v2WfT1wDJj7.4hIt$
 useradd -u 1016 -g users -c "Chris Page"       -p '$6$QTsnrEKlj6.SIbHC$AOxgWnsV4LFoF0WHJEWsLcwd15z9xvQ8vynYJ57cpgzzBUmkpmLJsnU56oY6eqUaojSPaWAjoXhIQbtRsOD2B/'  cpage19
 useradd -u 1017 -g users -G wheel -c "Patrick Finnegan" -p '$6$0OJ49TG3$bHcpsVTQVgEKW1q7ORv5IR1xrhNTtSHqvJjg9lFHsYdhHngyRA.m5iUgUYFLHKpNvr2De2jFF/2LARJFAArTc/' finnegpt
 useradd -u 1018 -g users -c "Nick Frooninckx"  -p '$6$kc27N/WE.OTPBM4a$5s/RJrSpQ1Jm6rrBt3OQRLy3UxNFWaW72urXxO65KJrTKUwlMQFxI/yBieN4Es3kgByIdlQq7dvlkMZjDufZi1' leghost
-useradd -u 1019 -g users -c "Eduardo Wedekind" -p '$6$sOw2qNV9vRncEPa5$vb5tQ0ajc02rASM9ND27bUf3HIDysPPsHT9lrec0H13gmB.cHZEBbkcja7Xhik4B.HG.X/bYf4.iJo74r9jrE1' eduardo
+useradd -u 1019 -g users -c "Eduardo Wedekind" -p '$6$xwQrHT2c$a3ZK3JBGjI8RV3riCFdyPnzLSuaSnIJLfaq46/awgAnBVkBToUy4xcwYjnMaLy3Z0j4/NiZuC9CrQWs9g8NEI.' eduardo
 
 
 # Purdue students
