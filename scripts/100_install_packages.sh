@@ -5,6 +5,10 @@
 # Pull in config settings... not really needed for this script, but ordnung!
 source $(dirname "$BASH_SOURCE")/000_config.sh
 
+# Add EPEL repo
+yum install -y epel-release
+yum repolist
+
 # Where the list is. 
 PKGLIST_FIRST=$SCRIPTS/packages/packagelist-1.txt
 PKGLIST_SECOND=$SCRIPTS/packages/packagelist-2.txt
