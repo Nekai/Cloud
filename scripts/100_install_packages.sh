@@ -6,16 +6,17 @@
 source $(dirname "$BASH_SOURCE")/000_config.sh
 
 # Where the list is. 
-PKGLIST=$SCRIPTS/packages/packagelist.txt
+PKGLIST_FIRST=$SCRIPTS/packages/packagelist-1.txt
+PKGLIST_SECOND=$SCRIPTS/packages/packagelist-2.txt
 
 # And go!
 # List is space- or newline-separated, with everything after any '#' 
 # considered a comment and ignored.
 echo "$BASH_SOURCE: First run"
-yum install -y $(sed -e 's/#.*//' $PKGLIST)
+yum install -y $(sed -e 's/#.*//' $PKGLIST_FIRST)
 echo
 
 # And once again for good measure
 echo "$BASH_SOURCE: Second run"
-yum install -y $(sed -e 's/#.*//' $PKGLIST)
+yum install -y $(sed -e 's/#.*//' $PKGLIST_SECOND)
 echo

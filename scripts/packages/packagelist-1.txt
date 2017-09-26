@@ -1,0 +1,34 @@
+# Packages to install - first pass (most important ones).
+# Less important and "secondary" in nature should go into second pass.
+#
+# One or several packages per line, space separated.
+# Anything past a first '#' on any line is considered a comment and ignored. 
+
+# General stuff
+git
+cmake
+patch patchutils
+redhat-lsb-core
+gcc gfortran gcc-c++
+
+# More general stuff
+gmp
+mpfr
+libmpc
+dejagnu
+tcl tcl-devel
+flex
+autogen
+guile guile-dev
+zlib zlib-devel
+fftw fftw-devel fftw-doc fftw-static
+glibc-static elfutils-devel-static elfutils-libelf-devel-static
+numactl numactl-devel
+kernel-devel
+pdsh pdsh-mod-dshgroup
+# hsi_htar                # after adding RCAC repo
+finger
+libnl3
+links
+htop
+ack
