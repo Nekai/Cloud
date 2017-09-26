@@ -9,7 +9,7 @@ git
 cmake
 patch patchutils
 redhat-lsb-core
-gcc gfortran gcc-c++
+gcc gcc-gfortran gcc-c++
 
 # More general stuff
 gmp
