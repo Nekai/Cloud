@@ -8,7 +8,9 @@ source $(dirname "$BASH_SOURCE")/000_config.sh
 
 # Cloudinit has shared homes under /shared/home as opposed to usual /home.
 # Change useradd default to create our users under shared one!
-useradd -D -b /shared/home
+HOME_BASE=/shared/home
+[[ -d $HOME_BASE ]] || mkdir -p $HOME_BASE
+useradd -D -b $HOME_BASE 	# Keep! 051_rcac_scratch.sh relies on this
 
 # HHS
 useradd -u 1010 -g users -G wheel -c "Chuck Schwarz" -p '$6$Db6M1nOH3bdT3fbu$GGbeO0eYSS7p6xMf21lIsjtqwD1pMzqxmyFVdtzJo6mQtpd5FrQ8FhyXDl24y46iNHKvNOcnvKcJL8oCQz352.' chuck
