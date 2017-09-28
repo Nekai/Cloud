@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+# This is the setup for torque clients such as raider-1
 source $(dirname "$BASH_SOURCE")/000_config.sh
 TORQUEPATH=$SCRIPTS/torque
 
@@ -45,7 +47,8 @@ ldconfig
 systemctl start trqauthd.service
 
 echo 'raider-0' > /var/spool/torque/server_name # Set servername as hostname
-echo '$PBSSERVER raider-0' > /var/spool/torque/mom_priv/config 
+echo '$pbsserver raider-0' > /var/spool/torque/mom_priv/config 
+echo ' $logevent 255' >> /var/spool/torque/mom_priv/config
 
 # Configure and start pbs_server and pbs_mom
 #cp $TORQUEPATH/pbs_server /etc/init.d
