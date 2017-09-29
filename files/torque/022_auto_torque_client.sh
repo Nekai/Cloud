@@ -6,7 +6,7 @@ source $(dirname "$BASH_SOURCE")/000_config.sh
 TORQUEPATH=$SCRIPTS/torque
 
 #Install all of torque's dependencies
-yum -y install libtool openssl-devel libxml2-devel boost-devel gcc gcc-c++
+yum -y install libtool openssl-devel libxml2-devel boost-devel gcc gcc-c++ flex byacc rpm-build
 
 #Export the needed path
 export PATH=/usr/local/bin/:/usr/local/sbin/:$PATH

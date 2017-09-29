@@ -11,7 +11,7 @@ libstdc++.i686 glibc.i686 libgcc.i686
 glibc-static elfutils-devel-static elfutils-libelf-devel-static
 
 # For Torque (even though we don't install it in the cloud):
-openssl-devel libxml2-devel boost-devel
+flex byacc rpm-build openssl-devel libxml2-devel boost-devel
 
 # For LAMMPS-Tersoff:
 libjpeg-turbo libjpeg-turbo-static libjpeg-turbo-devel
