@@ -3,7 +3,7 @@
 # (apparently disabled by default on some Cyclecloud's tweaked CentOS 7 images).
 
 # Pull in config settings
-source 000_config.sh
+source $(dirname "$BASH_SOURCE")/000_config.sh
 
 # Our snippet
 [ -d $ROOTDEST/etc/sudoers.d ] || mkdir -p $ROOTDEST/etc/sudoers.d

@@ -1,0 +1,17 @@
+# Packages to install - second pass (less important ones or depending on first).
+#
+# One or several per line, space separated.
+# Anything past a first '#' on any line is considered a comment and ignored. 
+
+# For Lmod:
+gcc lua-devel lua-filesystem lua-posix
+
+# More general stuff
+libstdc++.i686 glibc.i686 libgcc.i686
+glibc-static elfutils-devel-static elfutils-libelf-devel-static
+
+# For Torque (even though we don't install it in the cloud):
+flex byacc rpm-build openssl-devel libxml2-devel boost-devel
+
+# For LAMMPS-Tersoff:
+libjpeg-turbo libjpeg-turbo-static libjpeg-turbo-devel
