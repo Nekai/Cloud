@@ -23,6 +23,7 @@ useradd -u 1016 -g users -c "Chris Page"       -p '$6$QTsnrEKlj6.SIbHC$AOxgWnsV4
 useradd -u 1017 -g users -G wheel -c "Patrick Finnegan" -p '$6$0OJ49TG3$bHcpsVTQVgEKW1q7ORv5IR1xrhNTtSHqvJjg9lFHsYdhHngyRA.m5iUgUYFLHKpNvr2De2jFF/2LARJFAArTc/' finnegpt
 useradd -u 1018 -g users -c "Nick Frooninckx"  -p '$6$kc27N/WE.OTPBM4a$5s/RJrSpQ1Jm6rrBt3OQRLy3UxNFWaW72urXxO65KJrTKUwlMQFxI/yBieN4Es3kgByIdlQq7dvlkMZjDufZi1' leghost
 useradd -u 1019 -g users -c "Eduardo Wedekind" -p '$6$xwQrHT2c$a3ZK3JBGjI8RV3riCFdyPnzLSuaSnIJLfaq46/awgAnBVkBToUy4xcwYjnMaLy3Z0j4/NiZuC9CrQWs9g8NEI.' eduardo
+useradd -u 1020 -g users -c "Caitlin Hillery"  -p '$6$hQ2P5mqB$Z2sSl3/AJk9bMbaWbBSjwy1NjKeczqjuZaGBCh7lmGkcukZyTPpQgrVlxzEAhwFROCWWseYjltPI4ikrxbkdW0' caitlin
 
 
 # Purdue students
