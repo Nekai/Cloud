@@ -63,3 +63,10 @@ service pbs_mom restart
 
 
 # Make Packages for compute nodes
+make packages
+
+
+# Restart Server
+qterm
+sleep 2
+pbs_server
