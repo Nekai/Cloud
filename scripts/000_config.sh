@@ -7,8 +7,8 @@
 # Relative path ('$(dirname "$BASH_SOURCE")/..') works fine for testing 
 # and production. Or could use production-quality absolute 
 # '/mnt/cluster-init', but may have to change for off-site testing.
-INIT=$(dirname "$BASH_SOURCE")/..
-FILES=$INIT/files
+INIT=$(pwd)/..
+FILES=$INIT/files/
 SCRIPTS=$INIT/scripts/
 
 # And where the root of the destination filesystem is.

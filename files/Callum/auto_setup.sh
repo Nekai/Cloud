@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source $(dirname "$BASH_SOURCE")/000_config.sh
+source $(dirname "$BASH_SOURCE")/../../scripts/000_config.sh
 
 $TORQUEPATH = $FILES/Callum
 
@@ -23,7 +23,7 @@ tar -zxvf torque-5.1.3-1462984387_205d70d.tar.gz
 
 cd torque-5.1.3-1462984387_205d70d
 
-./configure
+./configure --enable-blcr --enable-nvidia-gpus
 
 make && make install
 

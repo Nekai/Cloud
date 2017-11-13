@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source $(dirname "$BASH_SOURCE")/../../000_config.sh
+source $(dirname "$BASH_SOURCE")/../../scripts/000_config.sh
 BLCRPATH=$FILES/blcr
 
 #Export the needed path
@@ -12,12 +12,13 @@ export PATH=/usr/local/bin/:/usr/local/sbin/:$PATH
 tar -xzvf blcr-0.8.6_b4.tar.gz
 
 cd blcr-0.8.6_b4
+BLCRDIR=$(pwd)
 
-mkdir builddir
+mkdir $BLCRDIR/builddir
 
-cd builddir
+cd $BLCRDIR/builddir
 
-../configure
+$BLCRDIR/configure
 
 make
 
@@ -25,6 +26,8 @@ make
 make install
 
 
-cd $FILES/torque
+echo $(pwd)
+cd $INIT
 
-./022_auto_torque_host.sh
+cd Callum
+./auto_setup.sh 2

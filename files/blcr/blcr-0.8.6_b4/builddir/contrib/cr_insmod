@@ -1,0 +1,6 @@
+#!/bin/sh
+# contrib/cr_insmod.  Generated from cr_insmod.in by configure.
+#
+# Reloads checkpoint/restart kernel modules
+
+make -C /home/sharp67/cloud/files/blcr/blcr-0.8.6_b4/builddir insmod
